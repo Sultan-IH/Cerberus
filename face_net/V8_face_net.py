@@ -1,20 +1,20 @@
 import numpy as np
 import tensorflow as tf
-from face_net.image_processing import get_img_data
-import pickle
+import face_net.image_processing as img
+import sys
+import random
 
 imgdir = './face_datasets/'
-train_datset = get_img_data(imgdir, sub_dir="Train_Data/")
-print(train_datset.shape)
+train_dir = "Train_data/"
+test_dir = "Test_Data/"
 
+train_data = img.get_img_data(img_dir=imgdir, sub_dir=train_dir, _save=False)
+# data is delivered in the form of a tuple like: (img_data,label)
+print("Size of the train data: = {0}".format(sys.getsizeof(train_data)))
+print("Length of the data set: {0}; Shape of each element: {1}".format(len(train_data), train_data[0][0].shape))
+random.shuffle(train_data)
+labels = [elm[1] for elm in train_data]  # TODO: make a simple sorting function
+imgs = [elm[0] for elm in train_data]
 
-# test_dataset = get_img_data(imgdir, "Test_Data/", _save=True) TODO: get a test data set
-# sess = tf.InteractiveSession()
-
-def conv2d(x, w):
-    return tf.nn.conv2d(x, w, strides=[1, 1, 1, 1], padding='SAME')
-
-
-def max_pool_2x2(x):
-    return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
-                          strides=[1, 2, 2, 1], padding='SAME')
+x = tf.placeholder(tf.float32, shape=[None, 784])
+y_ = tf.placeholder(tf.float32, shape=[None, 10])
