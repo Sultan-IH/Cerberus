@@ -1,15 +1,31 @@
 import tensorflow as tf
 import face_net._processing as pr
+from face_net._capture import WIDTH, HEIGHT  # Standartsized sizes for the images
 
-
-EPOCHS = 1000
+EPOCHS = 100
 BATCH_SIZE = 20
 
-#TODO FIND OUT THE DIMENTIONS OF AN IMAGE
+# Do the same thing yo.
+"""
+What I need to do:
+Move the function from _capture to _processing
+Use the same function to isolate the face from an image.
+
+"""
 
 imgdir = './face_datasets/'
 train_dir = "Train_data/"
 test_dir = "Test_Data/"
+# Load the datasets
+raw_lables = pr._load(img_dir=imgdir, sub_dir=train_dir, file="lables")
+raw_imgs = pr._load(img_dir=imgdir, sub_dir=train_dir, file="imgs")
+# Split them into chunks
+img_batches = pr.chunky(raw_imgs, BATCH_SIZE)
+lables_batches = pr.chunky(raw_lables, BATCH_SIZE)
+# Shuffle the chunks
+lables, imgs = pr.sim_shuffle(lables_batches, img_batches)
+
+"""Setting up the computation graph"""
 
 
 def weight_variable(shape):
@@ -31,16 +47,11 @@ def max_pool_2x2(x):
                           strides=[1, 2, 2, 1], padding='SAME')
 
 
-raw_lables = pr._load(img_dir=imgdir, sub_dir=train_dir, file="lables")
-raw_imgs = pr._load(img_dir=imgdir, sub_dir=train_dir, file="imgs")
-
-lables, imgs = pr._shuffle(raw_lables, raw_imgs)
-
 sess = tf.InteractiveSession()
 x = tf.placeholder(tf.float32, shape=[None, 784])
 y_ = tf.placeholder(tf.float32, shape=[None, 10])
 
-h1_Weights = weight_variable([1, 2, 3, 4]) # TODO: figure out a shape for the weights and the biases
+h1_Weights = weight_variable([1, 2, 3, 4])  # TODO: figure out a shape for the weights and the biases
 h1_Biases = bias_variable([1, 2, 3, 4])
 
 h1_conv = conv2d(x, h1_Weights)
@@ -65,11 +76,11 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 sess.run(tf.global_variables_initializer())
 
 for i in range(EPOCHS):
-    batches = []  # TODO: figure out how to feed the dataset in batches
-    list(range(0, EPOCHS, BATCH_SIZE))
+    # Mix the batches randomly
+    lables, imgs = pr.sim_shuffle(lables, imgs)
     if i % 100 == 0:
         train_accuracy = accuracy.eval(feed_dict={
             x: imgs[:], y_: lables[:], keep_prob: 1.0})
         print("step %d, training accuracy %g" % (i, train_accuracy))
-
+    #TODO: feed the batches for b in batches do
     train_step.run(feed_dict={x: imgs[:], y_: lables[:], keep_prob: 0.5})
