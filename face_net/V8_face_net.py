@@ -1,11 +1,9 @@
 import tensorflow as tf
 import face_net._processing as pr
-from face_net._capture import WIDTH, HEIGHT  # Standartsized sizes for the images
-
+from face_net._processing import WIDTH, HEIGHT  # Standartsized sizes for the images
+SIZE_OF_TRAIN_SET = 219 # Approx
 EPOCHS = 100
 BATCH_SIZE = 20
-
-# Do the same thing yo.
 """
 What I need to do:
 Move the function from _capture to _processing
@@ -16,16 +14,19 @@ Use the same function to isolate the face from an image.
 imgdir = './face_datasets/'
 train_dir = "Train_data/"
 test_dir = "Test_Data/"
+
 # Load the datasets
 raw_lables = pr._load(img_dir=imgdir, sub_dir=train_dir, file="lables")
 raw_imgs = pr._load(img_dir=imgdir, sub_dir=train_dir, file="imgs")
+
 # Split them into chunks
-img_batches = pr.chunky(raw_imgs, BATCH_SIZE)
-lables_batches = pr.chunky(raw_lables, BATCH_SIZE)
+img_batches = list(pr.chunky(raw_imgs, BATCH_SIZE))
+lables_batches = list(pr.chunky(raw_lables, BATCH_SIZE))
+
 # Shuffle the chunks
 lables, imgs = pr.sim_shuffle(lables_batches, img_batches)
 
-"""Setting up the computation graph"""
+"""   Setting up the computation graph   """
 
 
 def weight_variable(shape):
@@ -48,23 +49,23 @@ def max_pool_2x2(x):
 
 
 sess = tf.InteractiveSession()
-x = tf.placeholder(tf.float32, shape=[None, 784])
-y_ = tf.placeholder(tf.float32, shape=[None, 10])
+x = tf.placeholder(tf.float32, shape=[None, None, WIDTH * HEIGHT])
+y_ = tf.placeholder(tf.float32, shape=[None, 4])
 
-h1_Weights = weight_variable([1, 2, 3, 4])  # TODO: figure out a shape for the weights and the biases
-h1_Biases = bias_variable([1, 2, 3, 4])
+h1_Weights = weight_variable([5, 5, 1, 15])  # TODO: figure out a shape for the weights and the biases
+h1_Biases = bias_variable([15])
 
 h1_conv = conv2d(x, h1_Weights)
 h1_pooling = max_pool_2x2(h1_conv)
 
-h2_Weights = weight_variable([1, 2, 3, 4])
-h2_Biases = bias_variable([1, 2, 3, 4])
+h2_Weights = weight_variable([5, 5, 15, 30])
+h2_Biases = bias_variable([30])
 
 h2_conv = conv2d(x, h2_Weights)
 h2_pooling = max_pool_2x2(h2_conv)
-
-h3_Weights = weight_variable([1, 2, 3, 4])
-h3_Biases = bias_variable([1, 2, 3, 4])
+# Densely connected layer with 1024 neurons
+h3_Weights = weight_variable([75 * 112.5 * 30, 1024])
+h3_Biases = bias_variable([1024])
 
 h3_fc = tf.nn.relu(tf.matmul(h2_pooling, h3_Weights) + h3_Biases)
 keep_prob = tf.placeholder(tf.float32)
@@ -82,5 +83,6 @@ for i in range(EPOCHS):
         train_accuracy = accuracy.eval(feed_dict={
             x: imgs[:], y_: lables[:], keep_prob: 1.0})
         print("step %d, training accuracy %g" % (i, train_accuracy))
-    #TODO: feed the batches for b in batches do
-    train_step.run(feed_dict={x: imgs[:], y_: lables[:], keep_prob: 0.5})
+
+    for b in len(imgs):
+        train_step.run(feed_dict={x: imgs[b], y_: lables[b], keep_prob: 0.5})

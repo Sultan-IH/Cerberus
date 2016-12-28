@@ -1,11 +1,11 @@
 import cv2
+from face_net._processing import det_face_one
+import numpy as np
 
 """Have to have a standartised image dimensions and then magnify and diminish frames accordingly"""
 cv2.namedWindow("preview")
 vc = cv2.VideoCapture(0)
 face_cascade = cv2.CascadeClassifier('./haarcascade_frontalface_default.xml')
-WIDTH = 400
-HEIGHT = 400
 
 if vc.isOpened():  # try to get the first frame
     rval, frame = vc.read()
@@ -13,13 +13,11 @@ else:
     rval = False
 
 while rval:
-    faces = face_cascade.detectMultiScale(frame, 1.3, 5)
-    for (x, y, w, h) in faces:
-        just_face = frame[y:(y + w), x:(x + h)]
+    face = det_face_one(frame, 1.3)
     try:
-        resized_image = cv2.resize(just_face, (WIDTH, HEIGHT))
-        cv2.imshow("preview", resized_image)
-    except NameError:
+        face = cv2.cvtColor(face, cv2.COLOR_RGB2GRAY)
+        cv2.imshow("preview", face)
+    except:
         pass
 
     rval, frame = vc.read()
