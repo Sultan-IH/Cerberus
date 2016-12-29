@@ -3,11 +3,10 @@ import os
 import numpy as np
 import random
 import cv2
-
+NUM_PEOPLE = 4
 WIDTH = 400
 HEIGHT = 450
 
-# TODO: make them things one hot vectors
 """
 Goal: produce training and testing data sets.
 Entries should be in the form of: (image_data,label)
@@ -43,18 +42,19 @@ def get_img_data(img_dir, sub_dir, _ret=False):
         for face in faces:
             processed_face = cv2.imread(img_dir + person + "/" + face, 0)
             det = det_face_one(processed_face, 1.3)
-            imgs.append(det)
-            labels.append(people.index(person))
+            if det is not None:
+                imgs.append(det)
+                label = one_hot(4, people.index(person))  # 4 is the number of people
+                labels.append(label)
     assert len(imgs) == len(labels)
 
     print('Dumping the data set....')
-    print('Removing None instances...')
-    imgs = [x for x in imgs if x is not None]
-    labels = [x for x in labels if x is not None]
+
     with open(img_dir + "imgs", "wb") as f:
         np.save(f, np.asarray(imgs))
     with open(img_dir + "labels", "wb") as f:
         np.save(f, np.asarray(labels))
+
     if _ret:
         return imgs, labels
 
@@ -97,3 +97,9 @@ def det_face_one(img, scl):
         final_image = cv2.resize(just_face, (WIDTH, HEIGHT))
 
     return final_image
+
+
+def one_hot(shape, index):
+    vector = np.zeros(shape)
+    vector[index] = 1
+    return vector
