@@ -68,18 +68,24 @@ h2_Biases = bias_variable([30])
 
 h2_conv = tf.nn.relu(conv2d(h1_pooling, h2_Weights) + h2_Biases)
 h2_pooling = max_pool_2x2(h2_conv)
+h2_pool_flat = tf.reshape(h2_pooling, [-1, 100*113*30])
 
 # Densely connected layer with 1024 neurons
-h3_Weights = weight_variable([675000, 1024])
+h3_Weights = weight_variable([100*113* 30, 1024])
 h3_Biases = bias_variable([1024])
 
-h2_pool_flat = tf.reshape(h2_pooling, [-1, 675000])
 h3_fc = tf.nn.relu(tf.matmul(h2_pool_flat, h3_Weights) + h3_Biases)
+
+h4_Weights = weight_variable([1024, 4])
+h4_Biases = bias_variable([4])
+
+Y_ = tf.matmul(h3_fc, h4_Weights) + h4_Biases
+
 keep_prob = tf.placeholder(tf.float32)
 
-cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(h3_fc, y_))
+cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(Y_, y_))
 train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
-correct_prediction = tf.equal(tf.argmax(h3_fc, 1), tf.argmax(y_, 1))
+correct_prediction = tf.equal(tf.argmax(Y_, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 sess.run(tf.initialize_all_variables())
@@ -91,7 +97,7 @@ for i in range(EPOCHS):
     test_batch = rn.randint(0, len(imgs)-1)
     # Mix the batches randomly
     lables, imgs = pr.sim_shuffle(lables, imgs)
-    if i % 100 == 0:
+    if i % 10 == 0:
         train_accuracy = accuracy.eval(feed_dict={
             x: imgs[test_batch], y_: lables[test_batch], keep_prob: 1.0})
 
@@ -99,4 +105,5 @@ for i in range(EPOCHS):
 
     for b in range(len(imgs)):
         train_step.run(feed_dict={x: imgs[b], y_: lables[b], keep_prob: 0.5})
+        print("Batch number : {0}".format(b))
     print("Completed epoch: {0}".format(i))
