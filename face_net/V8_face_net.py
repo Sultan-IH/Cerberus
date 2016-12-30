@@ -1,10 +1,9 @@
 import tensorflow as tf
 import face_net._processing as pr
 from face_net._processing import WIDTH, HEIGHT, NUM_PEOPLE  # Standartsized sizes for the images
-import random as rn
 
 SIZE_OF_TRAIN_SET = 219  # Approx
-EPOCHS = 100
+EPOCHS = 30
 BATCH_SIZE = 20
 """
 What I need to do:
@@ -18,21 +17,27 @@ train_dir = "Train_data/"
 test_dir = "Test_Data/"
 
 # Load the datasets
-raw_lables = pr._load(img_dir=imgdir, sub_dir=train_dir, file="labels")
+raw_labels = pr._load(img_dir=imgdir, sub_dir=train_dir, file="labels")
 raw_imgs = pr._load(img_dir=imgdir, sub_dir=train_dir, file="imgs")
+
+test_images = [raw_imgs[11], raw_imgs[25], raw_imgs[44], raw_imgs[199]]  # armaan, jessica, micah and tal
 
 # Split them into chunks
 img_batches = list(pr.chunky(raw_imgs, BATCH_SIZE))
-lables_batches = list(pr.chunky(raw_lables, BATCH_SIZE))
+lables_batches = list(pr.chunky(raw_labels, BATCH_SIZE))
+
+test_batch_img = img_batches[4]
+test_batch_labels = lables_batches[4]
 
 # Shuffle the chunks
 lables, imgs = pr.sim_shuffle(lables_batches, img_batches)
-assert len(lables) == len(imgs)
 
+assert len(lables) == len(imgs)
 
 """   Setting up the computation graph   """
 
 print("Setting up the graph")
+
 
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, stddev=0.1)
@@ -68,10 +73,10 @@ h2_Biases = bias_variable([30])
 
 h2_conv = tf.nn.relu(conv2d(h1_pooling, h2_Weights) + h2_Biases)
 h2_pooling = max_pool_2x2(h2_conv)
-h2_pool_flat = tf.reshape(h2_pooling, [-1, 100*113*30])
+h2_pool_flat = tf.reshape(h2_pooling, [-1, 100 * 113 * 30])
 
 # Densely connected layer with 1024 neurons
-h3_Weights = weight_variable([100*113* 30, 1024])
+h3_Weights = weight_variable([100 * 113 * 30, 1024])
 h3_Biases = bias_variable([1024])
 
 h3_fc = tf.nn.relu(tf.matmul(h2_pool_flat, h3_Weights) + h3_Biases)
@@ -81,10 +86,9 @@ h4_Biases = bias_variable([4])
 
 Y_ = tf.matmul(h3_fc, h4_Weights) + h4_Biases
 
-keep_prob = tf.placeholder(tf.float32)
-
 cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(Y_, y_))
 train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+
 correct_prediction = tf.equal(tf.argmax(Y_, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
@@ -94,16 +98,13 @@ print("Finished setting up the graph. ")
 print("Starting training...")
 
 for i in range(EPOCHS):
-    test_batch = rn.randint(0, len(imgs)-1)
-    # Mix the batches randomly
     lables, imgs = pr.sim_shuffle(lables, imgs)
-    if i % 10 == 0:
-        train_accuracy = accuracy.eval(feed_dict={
-            x: imgs[test_batch], y_: lables[test_batch], keep_prob: 1.0})
-
-        print("step %d, training accuracy %g" % (i, train_accuracy))
 
     for b in range(len(imgs)):
-        train_step.run(feed_dict={x: imgs[b], y_: lables[b], keep_prob: 0.5})
+        train_step.run(feed_dict={x: imgs[b], y_: lables[b]})
         print("Batch number : {0}".format(b))
-    print("Completed epoch: {0}".format(i))
+
+    train_accuracy = accuracy.eval(feed_dict={x: test_batch_img, y_: test_batch_labels})
+    print("Completed epoch: {0}, accuracy: {1}".format(i, train_accuracy))
+
+    print("Computed probabilities: \n {0}".format(sess.run(Y_, feed_dict={x: test_images})))
