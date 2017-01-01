@@ -5,6 +5,7 @@ from face_net._processing import WIDTH, HEIGHT, NUM_PEOPLE  # Standartsized size
 SIZE_OF_TRAIN_SET = 219  # Approx
 EPOCHS = 30
 BATCH_SIZE = 20
+LEARNING_RATE = 1e-4
 """
 What I need to do:
 Move the function from _capture to _processing
@@ -61,7 +62,7 @@ sess = tf.InteractiveSession()
 x = tf.placeholder(tf.float32, shape=[None, HEIGHT, WIDTH])
 y_ = tf.placeholder(tf.float32, shape=[None, NUM_PEOPLE])
 
-h1_Weights = weight_variable([5, 5, 1, 15])  # TODO: figure out a shape for the weights and the biases
+h1_Weights = weight_variable([5, 5, 1, 15])
 h1_Biases = bias_variable([15])
 
 x_image = tf.reshape(x, [-1, WIDTH, HEIGHT, 1])
@@ -87,7 +88,7 @@ h4_Biases = bias_variable([4])
 Y_ = tf.matmul(h3_fc, h4_Weights) + h4_Biases
 
 cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(Y_, y_))
-train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(cross_entropy)
 
 correct_prediction = tf.equal(tf.argmax(Y_, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -96,6 +97,7 @@ sess.run(tf.initialize_all_variables())
 print("Finished setting up the graph. ")
 
 print("Starting training...")
+saver = tf.train.Saver([h1_Biases, h1_Weights, h2_Biases, h2_Weights, h3_Biases, h3_Weights, h4_Biases, h4_Weights])
 
 for i in range(EPOCHS):
     lables, imgs = pr.sim_shuffle(lables, imgs)
@@ -104,7 +106,10 @@ for i in range(EPOCHS):
         train_step.run(feed_dict={x: imgs[b], y_: lables[b]})
         print("Batch number : {0}".format(b))
 
-    train_accuracy = accuracy.eval(feed_dict={x: test_batch_img, y_: test_batch_labels})
+    train_accuracy = sess.run(accuracy, feed_dict={x: test_batch_img, y_: test_batch_labels})
     print("Completed epoch: {0}, accuracy: {1}".format(i, train_accuracy))
 
-    print("Computed probabilities: \n {0}".format(sess.run(Y_, feed_dict={x: test_images})))
+    one_hot_results = sess.run(tf.nn.softmax(sess.run(Y_, feed_dict={x: test_images})))
+    print("Computed probabilities: \n {0}".format(one_hot_results))
+
+saver.save(sess, 'V8_face_net_4L_CNN')
