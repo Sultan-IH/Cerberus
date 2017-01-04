@@ -3,9 +3,9 @@ import face_net._processing as pr
 from face_net._processing import WIDTH, HEIGHT, NUM_PEOPLE  # Standartsized sizes for the images
 
 SIZE_OF_TRAIN_SET = 219  # Approx
-EPOCHS = 30
+EPOCHS = 16
 BATCH_SIZE = 20
-LEARNING_RATE = 1e-4
+LEARNING_RATE = 1e-3
 """
 What I need to do:
 Move the function from _capture to _processing
@@ -21,23 +21,21 @@ test_dir = "Test_Data/"
 raw_labels = pr._load(img_dir=imgdir, sub_dir=train_dir, file="labels")
 raw_imgs = pr._load(img_dir=imgdir, sub_dir=train_dir, file="imgs")
 
-test_images = [raw_imgs[11], raw_imgs[25], raw_imgs[44], raw_imgs[199]]  # armaan, jessica, micah and tal
+test_rough = [raw_imgs[11], raw_imgs[25], raw_imgs[44], raw_imgs[199]]  # armaan, jessica, micah and tal
 
 # Split them into chunks
 img_batches = list(pr.chunky(raw_imgs, BATCH_SIZE))
 lables_batches = list(pr.chunky(raw_labels, BATCH_SIZE))
 
-test_batch_img = img_batches[4]
-test_batch_labels = lables_batches[4]
-
 # Shuffle the chunks
 lables, imgs = pr.sim_shuffle(lables_batches, img_batches)
+test_images, test_labels = pr.sim_shuffle(raw_imgs, raw_labels)
 
 assert len(lables) == len(imgs)
 
 """   Setting up the computation graph   """
 
-print("Setting up the graph")
+print("Setting up the graph...")
 
 
 def weight_variable(shape):
@@ -58,9 +56,15 @@ def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
 
+# tf.variable scope need to fing out what it is
+# sess = tf.InteractiveSession(config=tf.ConfigProto(log_device_placement=True))
 sess = tf.InteractiveSession()
+
 x = tf.placeholder(tf.float32, shape=[None, HEIGHT, WIDTH])
 y_ = tf.placeholder(tf.float32, shape=[None, NUM_PEOPLE])
+
+tf.add_to_collection('x_placeholder', x)
+tf.add_to_collection('y_placeholder', y_)
 
 h1_Weights = weight_variable([5, 5, 1, 15])
 h1_Biases = bias_variable([15])
@@ -86,6 +90,7 @@ h4_Weights = weight_variable([1024, 4])
 h4_Biases = bias_variable([4])
 
 Y_ = tf.matmul(h3_fc, h4_Weights) + h4_Biases
+tf.add_to_collection('compute_op', Y_)
 
 cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(Y_, y_))
 train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(cross_entropy)
@@ -106,10 +111,9 @@ for i in range(EPOCHS):
         train_step.run(feed_dict={x: imgs[b], y_: lables[b]})
         print("Batch number : {0}".format(b))
 
-    train_accuracy = sess.run(accuracy, feed_dict={x: test_batch_img, y_: test_batch_labels})
+    train_accuracy = accuracy.eval(feed_dict={x: test_images, y_: test_labels})
     print("Completed epoch: {0}, accuracy: {1}".format(i, train_accuracy))
 
-    one_hot_results = sess.run(tf.nn.softmax(sess.run(Y_, feed_dict={x: test_images})))
-    print("Computed probabilities: \n {0}".format(one_hot_results))
 
+# TODO: chnage the below to export graph mehthod
 saver.save(sess, 'V8_face_net_4L_CNN')

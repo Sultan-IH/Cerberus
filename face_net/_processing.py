@@ -41,7 +41,7 @@ def get_img_data(img_dir, sub_dir, _ret=False):
             pass
         for face in faces:
             processed_face = cv2.imread(img_dir + person + "/" + face, 0)
-            det = det_face_one(processed_face, 1.3)
+            det = det_face_one(processed_face, 1.1)
             if det is not None:
                 imgs.append(det)
                 label = one_hot(4, people.index(person))  # 4 is the number of people
@@ -79,7 +79,7 @@ def sim_shuffle(list1, list2):
     return np.array(list1_shuf), np.array(list2_shuf)
 
 
-def chunky(arr, size):  # TODO: need to convert to a list
+def chunky(arr, size):
     for l in range(0, len(arr), size):
         yield arr[l:l + size]
 
