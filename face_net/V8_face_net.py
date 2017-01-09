@@ -3,9 +3,10 @@ import face_net._processing as pr
 from face_net._processing import WIDTH, HEIGHT, NUM_PEOPLE  # Standartsized sizes for the images
 
 SIZE_OF_TRAIN_SET = 219  # Approx
-EPOCHS = 16
+EPOCHS = 25
 BATCH_SIZE = 20
 LEARNING_RATE = 1e-3
+LAMBDA = 1e-2
 """
 What I need to do:
 Move the function from _capture to _processing
@@ -86,14 +87,26 @@ h3_Biases = bias_variable([1024])
 
 h3_fc = tf.nn.relu(tf.matmul(h2_pool_flat, h3_Weights) + h3_Biases)
 
+keep_prob = tf.placeholder(tf.float32)
+h3_fc_drop = tf.nn.dropout(h3_fc, keep_prob)
+
 h4_Weights = weight_variable([1024, 4])
 h4_Biases = bias_variable([4])
 
-Y_ = tf.matmul(h3_fc, h4_Weights) + h4_Biases
+Y_ = tf.matmul(h3_fc_drop, h4_Weights) + h4_Biases
 tf.add_to_collection('compute_op', Y_)
 
-cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(Y_, y_))
-train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(cross_entropy)
+cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(Y_, y_) +
+                      LAMBDA * tf.nn.l2_loss(h1_Weights) +
+                      LAMBDA * tf.nn.l2_loss(h1_Biases) +
+                      LAMBDA * tf.nn.l2_loss(h2_Weights) +
+                      LAMBDA * tf.nn.l2_loss(h2_Biases) +
+                      LAMBDA * tf.nn.l2_loss(h3_Weights) +
+                      LAMBDA * tf.nn.l2_loss(h3_Biases) +
+                      LAMBDA * tf.nn.l2_loss(h4_Biases) +
+                      LAMBDA * tf.nn.l2_loss(h4_Weights))
+
+train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(cost)
 
 correct_prediction = tf.equal(tf.argmax(Y_, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -108,12 +121,10 @@ for i in range(EPOCHS):
     lables, imgs = pr.sim_shuffle(lables, imgs)
 
     for b in range(len(imgs)):
-        train_step.run(feed_dict={x: imgs[b], y_: lables[b]})
-        print("Batch number : {0}".format(b))
+        train_step.run(feed_dict={x: imgs[b], y_: lables[b], keep_prob: 0.5})
+        print("Batch: {0} completed".format(b))
 
-    train_accuracy = accuracy.eval(feed_dict={x: test_images, y_: test_labels})
-    print("Completed epoch: {0}, accuracy: {1}".format(i, train_accuracy))
+    train_accuracy = accuracy.eval(feed_dict={x: test_images, y_: test_labels, keep_prob: 1.0})
+    print("Completed epoch: {0}, accuracy: {1}".format(i, train_accuracy*100))
 
-
-# TODO: chnage the below to export graph mehthod
 saver.save(sess, 'V8_face_net_4L_CNN')

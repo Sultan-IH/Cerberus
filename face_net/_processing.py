@@ -3,6 +3,7 @@ import os
 import numpy as np
 import random
 import cv2
+
 NUM_PEOPLE = 4
 WIDTH = 400
 HEIGHT = 450
@@ -103,3 +104,18 @@ def one_hot(shape, index):
     vector = np.zeros(shape)
     vector[index] = 1
     return vector
+
+
+def softmax(vec):
+    probs = []
+    _sum = 0
+    assert vec != []
+    for i in range(len(vec)):
+        vec[i] = int(vec[i])/1000
+    for i in vec:
+        _sum += np.exp(i)
+    for i in vec:
+        prob = np.exp(i) / _sum
+        probs.append(prob)
+    return probs
+

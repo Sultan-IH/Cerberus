@@ -1,9 +1,12 @@
 import cv2
-from face_net._processing import det_face_one
+from face_net._processing import det_face_one, softmax
 import tensorflow as tf
-# Timer system
+import threading
+import time
+
+# TODO: k-means clustering with faces. cool stuff
 """Have to have a standartised image dimensions and then magnify and diminish frames accordingly"""
-cv2.namedWindow("preview")
+cv2.namedWindow("face")
 vc = cv2.VideoCapture(0)
 sess = tf.InteractiveSession()
 sess.run(tf.initialize_all_variables())
@@ -19,10 +22,14 @@ else:
     rval = False
 
 while rval:
-    face = det_face_one(frame, 1.2)
+    face = det_face_one(frame, 1.3)
     if face is not None:
+        print('TRYING TO RECOGNISE A FACE')
+        cv2.imshow('face', face)
         face = cv2.cvtColor(face, cv2.COLOR_RGB2GRAY)
-        sess.run(compute_op, feed_dict={x: [face]})
+        acts = compute_op.eval(feed_dict={x: [face]})
+        probs = softmax(acts[0])
+        print(probs)
 
     rval, frame = vc.read()
     key = cv2.waitKey(20)
