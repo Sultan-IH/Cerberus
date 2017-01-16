@@ -7,12 +7,6 @@ EPOCHS = 25
 BATCH_SIZE = 20
 LEARNING_RATE = 1e-3
 LAMBDA = 1e-2
-"""
-What I need to do:
-Move the function from _capture to _processing
-Use the same function to isolate the face from an image.
-
-"""
 
 imgdir = './face_datasets/'
 train_dir = "Train_data/"
@@ -31,7 +25,6 @@ lables_batches = list(pr.chunky(raw_labels, BATCH_SIZE))
 # Shuffle the chunks
 lables, imgs = pr.sim_shuffle(lables_batches, img_batches)
 test_images, test_labels = pr.sim_shuffle(raw_imgs, raw_labels)
-
 assert len(lables) == len(imgs)
 
 """   Setting up the computation graph   """
@@ -58,8 +51,10 @@ def max_pool_2x2(x):
 
 
 # tf.variable scope need to fing out what it is
-# sess = tf.InteractiveSession(config=tf.ConfigProto(log_device_placement=True))
 sess = tf.InteractiveSession()
+# sess = tf.InteractiveSession()
+tf.device('/gpu:0')
+
 
 x = tf.placeholder(tf.float32, shape=[None, HEIGHT, WIDTH])
 y_ = tf.placeholder(tf.float32, shape=[None, NUM_PEOPLE])
@@ -97,21 +92,17 @@ Y_ = tf.matmul(h3_fc_drop, h4_Weights) + h4_Biases
 tf.add_to_collection('compute_op', Y_)
 
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(Y_, y_) +
-                      LAMBDA * tf.nn.l2_loss(h1_Weights) +
-                      LAMBDA * tf.nn.l2_loss(h1_Biases) +
-                      LAMBDA * tf.nn.l2_loss(h2_Weights) +
-                      LAMBDA * tf.nn.l2_loss(h2_Biases) +
-                      LAMBDA * tf.nn.l2_loss(h3_Weights) +
-                      LAMBDA * tf.nn.l2_loss(h3_Biases) +
-                      LAMBDA * tf.nn.l2_loss(h4_Biases) +
-                      LAMBDA * tf.nn.l2_loss(h4_Weights))
+                      LAMBDA * tf.divide(tf.nn.l2_loss(h1_Weights) +
+                                         tf.nn.l2_loss(h2_Weights) +
+                                         tf.nn.l2_loss(h3_Weights) +
+                                         tf.nn.l2_loss(h4_Weights), 4))
 
 train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(cost)
 
 correct_prediction = tf.equal(tf.argmax(Y_, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-sess.run(tf.initialize_all_variables())
+sess.run(tf.global_variables_initializer())
 print("Finished setting up the graph. ")
 
 print("Starting training...")
@@ -125,6 +116,6 @@ for i in range(EPOCHS):
         print("Batch: {0} completed".format(b))
 
     train_accuracy = accuracy.eval(feed_dict={x: test_images, y_: test_labels, keep_prob: 1.0})
-    print("Completed epoch: {0}, accuracy: {1}".format(i, train_accuracy*100))
+    print("Completed epoch: {0}, accuracy: {1}".format(i, train_accuracy * 100))
 
 saver.save(sess, 'V8_face_net_4L_CNN')

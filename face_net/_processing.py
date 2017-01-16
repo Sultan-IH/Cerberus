@@ -2,7 +2,7 @@
 import os
 import numpy as np
 import random
-import cv2
+#import cv2
 
 NUM_PEOPLE = 4
 WIDTH = 400
