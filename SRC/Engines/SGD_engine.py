@@ -10,11 +10,12 @@ class SGD_engine(Engine):
         """cost"""
         self.cost_class = cost_class
 
-    def minimize(self, lr):
+    def get_train_op(self, lr):
         """minimise using the cost derivative"""
         cost_fn = self.cost_class.cost_op()
         train_step = tf.train.AdamOptimizer(lr).minimize(cost_fn)
         return train_step
 
-    def propagate(self):
-        """feedforward"""
+    def propagate(self, placeholder, x, compute_op):
+        """compute the funal value when a placeholder is fed"""
+        return compute_op.eval(feed_dict={placeholder: x})
