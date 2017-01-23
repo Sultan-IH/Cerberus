@@ -47,14 +47,14 @@ class NetworkConstructor():
         engine.cost_class.__init__(engine.cost_class, self.params)
         self.engine = engine
 
-    def construct_and_train(self):
+    def construct(self):
         # TODO: when reaches a peak accuracy with validation data save the netwrok
         # TODO: implement dropout
-        # TODO: should the training be done in an engine or not
 
         self.sess.run(tf.global_variables_initializer())
         train_op = self.engine.get_train_op()
         batches = rn.shuffle(self.train_data)
+        # TODO: training should be transferred to the engine
         for e in range(self.engine.epochs):
             for b in batches:
                 train_op.run(feed_dict={self.x: b[0], self.y: b[1]})
