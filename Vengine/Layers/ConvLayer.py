@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from lib.Layers.BaseLayerClass import Layer
+from Vengine.Layers.BaseLayerClass import Layer
 
 
 class ConvLayer(Layer):

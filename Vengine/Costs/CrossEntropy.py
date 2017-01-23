@@ -1,5 +1,5 @@
 import tensorflow as tf
-from lib.Costs.BaseCostClass import Cost
+from Vengine.Costs.BaseCostClass import Cost
 
 
 class CrossEntropy(Cost):

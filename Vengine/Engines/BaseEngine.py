@@ -12,4 +12,5 @@ class Engine():
 
     def propagate(self, _dict, compute_op):
         """Use distrubuted workload when possible, need to find out more about that"""
+        #NOT SURE IF NEEDED
         return compute_op.eval(feed_dict=_dict)

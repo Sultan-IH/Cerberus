@@ -10,7 +10,7 @@ layers: a list of layers that would comprise the network
 engine: an implementation of a learning algorithm used
 """
 """
-LAYERS: MUST BE PASSED IN AS A LIST OF INITTIATED LAYERS
+LAYERS: MUST BE PASSED IN AS A LIST OF INITIATED LAYERS
 every layer must have a get_op() method that takes an op from a previous layer
 
 """
@@ -45,25 +45,30 @@ class NetworkConstructor():
     def fit_engine(self, engine):
         # might be unstable because passing in an empty class
         engine.cost_class.__init__(engine.cost_class, self.params)
-        self.engine = engine
+        self.train_op = engine.get_train_op()
 
-    def construct(self):
-        # TODO: when reaches a peak accuracy with validation data save the netwrok
+        # TODO: extract train and propagate ops here
+
+    def run(self,epochs):
         # TODO: implement dropout
 
         self.sess.run(tf.global_variables_initializer())
         train_op = self.engine.get_train_op()
         batches = rn.shuffle(self.train_data)
-        # TODO: training should be transferred to the engine
-        for e in range(self.engine.epochs):
+        # TODO: training should be done here
+        for e in range(epochs):
             for b in batches:
                 train_op.run(feed_dict={self.x: b[0], self.y: b[1]})
+                # TODO: when reaches a peak accuracy with validation data save the netwrok
 
-        Y = self.engine.propagate(_dict={self.x: self.train_data}, compute_op=self.compute_op)
+        Y = self.compute_op.eval(_dict={self.x: self.train_data}, compute_op=self.compute_op)
 
         correct_prediction = tf.equal(tf.argmax(Y, 1), tf.argmax(self.test_data[1], 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
         tf.add_to_collection("accuracy",accuracy)
+        tf.add_to_collection("train_op",self.train_op)
+        tf.add_to_collection("comute_op",self.compute_op)
+
         self.save_full_graph(self.sess,self.save_path)
 
 
