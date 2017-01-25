@@ -1,9 +1,9 @@
 __version__ = 0.1
 
 
-__all__ = ['NetworkConstructor','Loader','CrossEntropy','SGD_engine']
+__all__ = ['Network','Loader','CrossEntropy','SGD_engine','ConvLayer']
 
-from Vengine.main.FF_Network_Constructor import NetworkConstructor
+from Vengine.main.Network import Network
 from Vengine.main.Loader import Loader
-from Vengine.costs.CrossEntropy import CrossEntropy
-from Vengine.engines.SGD_engine import SGD_engine
+from Vengine.Costs.CrossEntropy import CrossEntropy
+from Vengine.Layers.ConvLayer import ConvLayer

@@ -1,6 +1,5 @@
+# TODO: implement dropout
 import tensorflow as tf
-import numpy as np
-
 
 class Layer():
     """provide base functionality for every layer"""
