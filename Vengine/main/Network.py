@@ -4,22 +4,16 @@ import random as rn
 
 """
 Does all of the dirty work: saving, training using a GPU
-layers: a list of layers that would comprise the network
 
-engine: an implementation of a learning algorithm used
-"""
-"""
 LAYERS: MUST BE PASSED IN AS A LIST OF INITIATED LAYERS
 every layer must have a get_op() method that takes an op from a previous layer
 
-"""
-"""
 COST:
 """
 
 
 class Network():
-
+    """Initialises a graph """
     def __init__(self, engine, layers ):
         self.sess = tf.InteractiveSession()
         self.x = tf.placeholder(dtype=tf.float32)
@@ -30,15 +24,17 @@ class Network():
                 op = layer.get_op(self.x)
 
             # should pass in the op from the previous layer to the next layer
-            self.params.append(layer.get_params())
+            self.params.append(layer.params)
             op = layer.get_op(op)
         self.compute_op = op
 
         engine.cost_class.__init__(engine.cost_class, self.params)
+        self.sess.run(tf.global_variables_initializer())
         self.train_op = engine.get_train_op()
         tf.add_to_collection("train_op", self.train_op)
         tf.add_to_collection("compute_op", self.compute_op)
         tf.add_to_collection("placeholders", [self.x, self.y])
+
 
 
 

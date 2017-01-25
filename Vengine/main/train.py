@@ -2,25 +2,41 @@ import tensorflow as tf
 from tensorflow.python.client import device_lib
 import random as rn
 
+"""
+batches should be a tuple with (example,label)
+"""
 
-def train(net, epochs, Train_data, Test_data, batch_size):
 
-
-    net.sess.run(tf.global_variables_initializer())
-    train_op = net.engine.get_train_op()
-    batches = rn.shuffle( Train_data)
-    # TODO: training should be done here
+#
+def train(net, epochs, Train_data, Test_data, Validation_data, batch_size):
+    train_op = net.train_op
+    raw_batches = list(chunky(Train_data, batch_size))
+    batches = rn.shuffle(raw_batches)
+    accuracies = [] # TODO: stop when accuracy reaches a peak
     for e in range(epochs):
+
         for b in batches:
             train_op.run(feed_dict={net.x: b[0], net.y: b[1]})
-            # TODO: when reaches a peak accuracy with validation data save the netwrok
+        Z = net.compute_op.eval(feed_dict={net.x: Validation_data[0]})
+        correct_prediction = tf.equal(tf.argmax(Z, 1), tf.argmax(Test_data[1], 1))
+        accuracy = tf.mul(tf.reduce_mean(tf.cast(correct_prediction, tf.float32)), 100)
 
-    Y = net.compute_op.eval(_dict={net.x: Test_data})
+        if Validation_data:
+            print("Epoch: {0}; accuracy: {1}".format(e, accuracy.eval(
+                feed_dict={net.x: Validation_data[0], net.y: Validation_data[1]})))
+        else:
+            print("Epoch {0} finished; accuracy: {1}".format(e, accuracy.eval(
+                feed_dict={net.x: Test_data[0], net.y: Test_data[1]})))
 
-    correct_prediction = tf.equal(tf.argmax(Y, 1), tf.argmax(net.test_data[1], 1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    tf.add_to_collection("accuracy", accuracy)
+    Y = net.compute_op.eval(_dict={net.x: Test_data[0]})
+    correct_prediction = tf.equal(tf.argmax(Y, 1), tf.argmax(Test_data[1], 1))  # should be a placeholder
+    accuracy = tf.mul(tf.reduce_mean(tf.cast(correct_prediction, tf.float32)), 100)
+    final = accuracy.eval(feed_dict={net.x: Test_data[0], net.y: Test_data[1]})
+    print("Final accuracy: {0}".format(final))
+    tf.add_to_collection("Final_Accuracy", final)
 
+
+"""Helper methods"""
 
 
 def chunky(arr, size):

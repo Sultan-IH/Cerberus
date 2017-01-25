@@ -1,5 +1,4 @@
 import tensorflow as tf
-import numpy as np
 from Vengine.Layers.BaseLayerClass import Layer
 
 
@@ -14,6 +13,7 @@ class ConvLayer(Layer):
 
         self.Weights = self.weight_variable(filter_size)
         self.Biases = self.bias_variable(filter_size[3])
+        self.params = [self.Weights,self.Biases]
 
     def get_op(self, x):
         """Should return its op"""
