@@ -8,9 +8,8 @@ batch_xs, batch_ys = mnist.train.next_batch(50000)
 
 layers = [
     ConvLayer(filter_size=(5, 5, 1, 15)),
-
     DenseLayer([784, 1000]),
-    DenseLayer([1000, 10])  # should be a placeholder
+    DenseLayer([1000, 10])
 
 ]
 
@@ -23,5 +22,4 @@ data_sets = {
 
 model = Network(Adam_engine(CrossEntropy, lr=1e-3), layers)
 
-v8.train(net=model, data_sets=data_sets,
-         epochs=30, batch_size=32, log=True)
+v8.train(net=model, data_sets=data_sets, epochs=30, batch_size=32, log=True)
