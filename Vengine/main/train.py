@@ -2,36 +2,45 @@ import tensorflow as tf
 from tensorflow.python.client import device_lib
 import random as rn
 
+import numpy as np
+
 """
-batches should be a tuple with (example,label)
+TRAIN_DATA list of two
 """
 
 
-#
-def train(net, epochs, Train_data, Test_data, Validation_data, batch_size):
+# TODO: stop when accuracy reaches a peak
+# TODO: training depending on the number of gpus
+
+
+def train(net, epochs, data_sets, batch_size, log):
     train_op = net.train_op
-    raw_batches = list(chunky(Train_data, batch_size))
-    batches = rn.shuffle(raw_batches)
-    accuracies = [] # TODO: stop when accuracy reaches a peak
+    image_batches = list(chunky(data_sets["Train_data"][0], batch_size))
+    lable_batches = list(chunky(data_sets["Train_data"][1], batch_size))
+    batches = list(zip(image_batches, lable_batches))
+    rn.shuffle(batches)
+    Z = tf.placeholder(dtype=tf.float32)
+    correct_prediction = tf.equal(tf.argmax(Z, 1), tf.argmax(data_sets["Test_data"][1], 1))
+    accuracy = tf.mul(tf.reduce_mean(tf.cast(correct_prediction, tf.float32)), 100)
+
     for e in range(epochs):
 
         for b in batches:
             train_op.run(feed_dict={net.x: b[0], net.y: b[1]})
-        Z = net.compute_op.eval(feed_dict={net.x: Validation_data[0]})
-        correct_prediction = tf.equal(tf.argmax(Z, 1), tf.argmax(Test_data[1], 1))
-        accuracy = tf.mul(tf.reduce_mean(tf.cast(correct_prediction, tf.float32)), 100)
 
-        if Validation_data:
+        if data_sets["Validation_data"]:
             print("Epoch: {0}; accuracy: {1}".format(e, accuracy.eval(
-                feed_dict={net.x: Validation_data[0], net.y: Validation_data[1]})))
+                feed_dict={Z: net.compute_op.eval(feed_dict={net.x: data_sets["Validation_data"][0]}),
+                           net.y: data_sets["Validation_data"][1]})))
         else:
             print("Epoch {0} finished; accuracy: {1}".format(e, accuracy.eval(
-                feed_dict={net.x: Test_data[0], net.y: Test_data[1]})))
+                feed_dict={Z: net.compute_op.eval(feed_dict={net.x: data_sets["Test_data"][0]}),
+                           net.y: data_sets["Test_data"][1]})))
 
-    Y = net.compute_op.eval(_dict={net.x: Test_data[0]})
-    correct_prediction = tf.equal(tf.argmax(Y, 1), tf.argmax(Test_data[1], 1))  # should be a placeholder
+    Y = net.compute_op.eval(_dict={net.x: data_sets["Test_data"][0]})
+    correct_prediction = tf.equal(tf.argmax(Y, 1), tf.argmax(data_sets["Test_data"][1], 1))  # should be a placeholder
     accuracy = tf.mul(tf.reduce_mean(tf.cast(correct_prediction, tf.float32)), 100)
-    final = accuracy.eval(feed_dict={net.x: Test_data[0], net.y: Test_data[1]})
+    final = accuracy.eval(feed_dict={net.x: data_sets["Test_data"][0], net.y: data_sets["Test_data"][1]})
     print("Final accuracy: {0}".format(final))
     tf.add_to_collection("Final_Accuracy", final)
 

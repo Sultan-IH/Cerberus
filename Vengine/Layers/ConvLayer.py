@@ -13,11 +13,10 @@ class ConvLayer(Layer):
 
         self.Weights = self.weight_variable(filter_size)
         self.Biases = self.bias_variable(filter_size[3])
-        self.params = [self.Weights,self.Biases]
+        self.params = [self.Weights, self.Biases]
 
     def get_op(self, x):
         """Should return its op"""
-        assert x == tf.placeholder or x == tf.Tensor
         self.op = tf.nn.relu(self.conv2d(x, self.Weights) + self.Biases)
         return self.op
 
