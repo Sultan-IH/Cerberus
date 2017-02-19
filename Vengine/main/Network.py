@@ -21,12 +21,26 @@ class Network():
         self.y = tf.placeholder(dtype=tf.float32)
         self.params = []
         for layer in layers:
-            if layers.index(layer) == 0:
+            index = layers.index(layer)
+            print("Layer: {0}".format(layer))
+
+            if index == 0:
                 op = layer.get_op(self.x)
             else:
+                print("Current layer dims: {0} and previous layer dims: {1}".format(layer.dims, layers[index - 1].dims))
+                if layer.dims != layers[index - 1].dims and layer.shape is not None:
+                    # reshaping the activations
+                    print("Reshaping; {0}".format(layer))
+                    op = tf.reshape(layers[index - 1].op, [-1, layer.shape[0]])
+
                 op = layer.get_op(op)
+
             # should pass in the op from the previous layer to the next layer
-            self.params.append(layer.params)
+            try:
+                self.params.append(layer.params)
+            except:
+                print("Encountered a Pooling layer")
+
         self.compute_op = op
         engine.cost_class = engine.cost_class(self.params)  # Initiating cost class
         self.train_op = engine.get_train_op(self.compute_op, self.y)

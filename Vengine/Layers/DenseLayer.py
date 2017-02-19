@@ -1,11 +1,12 @@
 import tensorflow as tf
 from Vengine.Layers.BaseLayerClass import Layer
 
-# TODO: finish dropout
 class DenseLayer(Layer):
     def __init__(self, shape, drop_prob=False):
         self.Weights = self.weight_variable(shape=shape)
         self.Biases = self.bias_variable([shape[1]])
+        self.shape = shape
+        self.dims = len(shape)
         if drop_prob:
             self.drop_prob = tf.placeholder(dtype=tf.float32)
         else:

@@ -1,15 +1,8 @@
-class Color:
-    def __init__(self):
-        self.mes = 'hello'
-
-    def method(self, mes2):
-        print(self.mes + mes2)
+class array(list):
+    def test(self, msg):
+        print(msg)
 
 
-class Color2(Color):
-    def call(self):
-        self.method(" world")
+a = array([1, 2, 3, 4])
 
-
-col = Color2()
-col.call()
+print(a[3])

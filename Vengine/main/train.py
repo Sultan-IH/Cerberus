@@ -9,12 +9,9 @@ TRAIN_DATA list of two
 """
 
 
-# TODO: stop when accuracy reaches a peak
-# TODO: training depending on the number of gpus
-
-
 def train(net, epochs, data_sets, batch_size, log):
     train_op = net.train_op
+
     image_batches = list(chunky(data_sets["Train_data"][0], batch_size))
     lable_batches = list(chunky(data_sets["Train_data"][1], batch_size))
     batches = list(zip(image_batches, lable_batches))

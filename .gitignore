@@ -1,2 +1,4 @@
 #removing the cases dir for now, not proper examples of lib usage and quite heavy in format
-Cases
+Cases/
+.idea
+

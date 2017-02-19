@@ -1,5 +1,12 @@
 __version__ = 0.1
 
+# TODO: some layers have different dimensions so the data would require flattening first
+# TODO: implement dropout
+# TODO: finish load save and join
+# TODO:figure out how to properly set out the init
+# TODO: stop when accuracy reaches a peak
+# TODO: training depending on the number of gpus
+
 __all__ = ['Network', 'load', 'CrossEntropy', 'SGD_engine', 'ConvLayer', 'DenseLayer', 'train', 'Adam_engine',
            'PoolLayer']
 
