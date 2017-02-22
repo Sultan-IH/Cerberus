@@ -12,8 +12,8 @@ layers = [
     PoolLayer(),
     ConvLayer((5, 5, 15, 30)),
     PoolLayer(),
-    DenseLayer([7, 500]),
-    DenseLayer([500, 10])
+    DenseLayer([7 * 7 * 30, 250]),  # the shape of this tensor was the problem
+    DenseLayer([250, 10])
 
 ]
 
@@ -24,6 +24,8 @@ data_sets = {
 
 }
 model = Network(Adam_engine(CrossEntropy, lr=1e-3), layers)
-data_sets['Train_data'][0] = np.reshape(data_sets['Train_data'][0], [-1, 28, 28, 1])
+
+data_sets["Train_data"][0] = np.reshape(data_sets["Train_data"][0], [-1, 28, 28, 1])
+data_sets["Test_data"][0] = np.reshape(data_sets["Test_data"][0], [-1, 28, 28, 1])
 
 v8.train(net=model, data_sets=data_sets, epochs=30, batch_size=32, log=True)

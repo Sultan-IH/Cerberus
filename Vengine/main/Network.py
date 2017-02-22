@@ -30,8 +30,8 @@ class Network():
                 print("Current layer dims: {0} and previous layer dims: {1}".format(layer.dims, layers[index - 1].dims))
                 if layer.dims != layers[index - 1].dims and layer.shape is not None:
                     # reshaping the activations
-                    print("Reshaping; {0}".format(layer))
-                    op = tf.reshape(layers[index - 1].op, [-1, layer.shape[0]])
+                    print("Reshaping; {0} index {1}".format(layer, index))
+                    op = tf.reshape(layers[index - 1].op, [-1,layer.shape[0]])
 
                 op = layer.get_op(op)
 

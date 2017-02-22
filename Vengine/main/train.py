@@ -6,15 +6,22 @@ import numpy as np
 
 """
 TRAIN_DATA list of two
+
 """
+
+
+# TODO: make separate methods for calculating the accuracy and for detecting and training on multiple gpus
 
 
 def train(net, epochs, data_sets, batch_size, log):
     train_op = net.train_op
 
-    image_batches = list(chunky(data_sets["Train_data"][0], batch_size))
-    lable_batches = list(chunky(data_sets["Train_data"][1], batch_size))
-    batches = list(zip(image_batches, lable_batches))
+    image_batches = [data_sets["Train_data"][0][k:k + batch_size] for k in
+                     range(0, len(data_sets["Train_data"][0]), batch_size)]
+    label_batches = [data_sets["Train_data"][1][k:k + batch_size] for k in
+                     range(0, len(data_sets["Train_data"][1]), batch_size)]
+
+    batches = list(zip(image_batches, label_batches))
     rn.shuffle(batches)
     Z = tf.placeholder(dtype=tf.float32)
     correct_prediction = tf.equal(tf.argmax(Z, 1), tf.argmax(data_sets["Test_data"][1], 1))
@@ -43,11 +50,6 @@ def train(net, epochs, data_sets, batch_size, log):
 
 
 """Helper methods"""
-
-
-def chunky(arr, size):
-    for l in range(0, len(arr), size):
-        yield arr[l:l + size]
 
 
 def get_available_gpus():
