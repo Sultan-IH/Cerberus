@@ -14,6 +14,7 @@ TRAIN_DATA list of two
 
 
 def train(net, epochs, data_sets, batch_size, log):
+    print("train() called")
     train_op = net.train_op
 
     image_batches = [data_sets["Train_data"][0][k:k + batch_size] for k in

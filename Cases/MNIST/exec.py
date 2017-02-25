@@ -1,5 +1,8 @@
-from Vengine import Network, DenseLayer, Adam_engine, CrossEntropy, ConvLayer, PoolLayer
-import Vengine.main.train as v8
+from Vengine.Layers import DenseLayer, ConvLayer, PoolLayer
+from Vengine.main import train, Network
+from Vengine.Engines import Adam_engine
+from Vengine.Costs import CrossEntropy
+
 from tensorflow.examples.tutorials.mnist import input_data
 import numpy as np
 
@@ -12,8 +15,7 @@ layers = [
     PoolLayer(),
     ConvLayer((5, 5, 15, 30)),
     PoolLayer(),
-    DenseLayer([7 * 7 * 30, 250]),  # the shape of this tensor was the problem
-    DenseLayer([250, 10])
+    DenseLayer([7 * 7 * 30, 250])  # the shape of this tensor was the problem
 
 ]
 
@@ -23,9 +25,13 @@ data_sets = {
     "Validation_data": False
 
 }
-model = Network(Adam_engine(CrossEntropy, lr=1e-3), layers)
-
 data_sets["Train_data"][0] = np.reshape(data_sets["Train_data"][0], [-1, 28, 28, 1])
 data_sets["Test_data"][0] = np.reshape(data_sets["Test_data"][0], [-1, 28, 28, 1])
 
-v8.train(net=model, data_sets=data_sets, epochs=30, batch_size=32, log=True)
+
+model = Network(layers=layers)
+
+model.add_layer(DenseLayer([250, 10]), 5)
+model.fit_engine(engine=Adam_engine(CrossEntropy, lr=1e-3))
+
+train(net=model, data_sets=data_sets, epochs=30, batch_size=32, log=True)
