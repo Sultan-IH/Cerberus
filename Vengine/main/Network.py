@@ -9,6 +9,10 @@ LAYERS: MUST BE PASSED IN AS A LIST OF INITIATED LAYERS
 every layer must have a get_op() method that takes an op from a previous layer
 
 COST: MUST BE AN UNINITIATED COST CLASS
+
+IDEAS:
+flags = tf.app.flags
+tf.app.run()
 """
 
 
