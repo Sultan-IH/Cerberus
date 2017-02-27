@@ -11,6 +11,7 @@ TRAIN_DATA list of two
 
 
 # TODO: make separate methods for calculating the accuracy and for detecting and training on multiple gpus
+# TODO: make a train method tailored to specific type of model
 
 
 def train(net, epochs, data_sets, batch_size, log):

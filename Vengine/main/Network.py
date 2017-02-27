@@ -13,30 +13,46 @@ COST: MUST BE AN UNINITIATED COST CLASS
 IDEAS:
 flags = tf.app.flags
 tf.app.run()
+
+WHAT IS A NETWORK INSTANCE?:
+params, placeholders
+compute op
+train op
+
 """
 
 
 class Network():
     """Initialises a graph """
 
-    def __init__(self, engine=None, layers=None):
-        self.sess = tf.InteractiveSession()
-        self.x = tf.placeholder(dtype=tf.float32)
-        self.y = tf.placeholder(dtype=tf.float32)
-        self.params = []
-        if layers is not None:
-            self.layers = layers
-            for layer in layers:
-                index = layers.index(layer)
-                print("Layer: {0}".format(layer))
+    def __init__(self, engine=None, layers=None, load_dict=None):
+        if load_dict:
+            self.sess = load_dict["sess"]
+            self.params = load_dict["params"]
+            self.x = load_dict["placeholders"][0]
+            self.y = load_dict["placeholders"][1]
+            self.compute_op = load_dict["train_op"]
+            self.train_op = load_dict["train_op"]
 
-                if index == 0:
-                    self.compute_op = layer.get_op(self.x)
-                else:
-                    self.add_layer(layer, index)
-        if engine is not None:
-            self.fit_engine(engine)
-        tf.add_to_collection("placeholders", [self.x, self.y])
+        else:
+            self.sess = tf.InteractiveSession()
+            self.x = tf.placeholder(dtype=tf.float32)
+            self.y = tf.placeholder(dtype=tf.float32)
+            self.params = []
+            if layers is not None:
+                self.layers = layers
+                for layer in layers:
+                    index = layers.index(layer)
+                    print("Layer: {0}".format(layer))
+
+                    if index == 0:
+                        self.compute_op = layer.get_op(self.x)
+                    else:
+                        self.add_layer(layer, index)
+                tf.add_to_collection("params", self.params)
+            if engine is not None:
+                self.fit_engine(engine)
+            tf.add_to_collection("placeholders", [self.x, self.y])
 
     def add_layer(self, layer, index):
         """
@@ -66,6 +82,7 @@ class Network():
             self.params.append(layer.params)
         except:
             print("Encountered a Pooling layer")
+
         tf.add_to_collection("compute_op", self.compute_op)  # when accessing it get the item at [-1]index
 
     def fit_engine(self, engine):
