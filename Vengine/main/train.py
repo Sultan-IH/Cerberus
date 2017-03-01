@@ -25,33 +25,37 @@ def train(net, epochs, data_sets, batch_size, log):
 
     batches = list(zip(image_batches, label_batches))
     rn.shuffle(batches)
-    Z = tf.placeholder(dtype=tf.float32)
-    correct_prediction = tf.equal(tf.argmax(Z, 1), tf.argmax(data_sets["Test_data"][1], 1))
-    accuracy = tf.mul(tf.reduce_mean(tf.cast(correct_prediction, tf.float32)), 100)
+
+    if data_sets["Validation_data"]:
+        Z, accuracy = make_accuracy_op(data_sets["Validation_data"][1])
+
+    else:
+        Z, accuracy = make_accuracy_op(data_sets["Test_data"][1])
+
+    data_set = data_sets["Test_data"][1] if data_sets["Validation_data"] is None else data_sets["Validation_data"][1]
 
     for e in range(epochs):
 
         for b in batches:
             train_op.run(feed_dict={net.x: b[0], net.y: b[1]})
+        acc = accuracy.eval(feed_dict={Z: net.compute_op.eval(feed_dict={net.x: data_set})})
+        print("Epoch: {0}; Accuracy: {1}".format(e, acc))
+        tf.add_to_collection("Accuracies", acc)
 
-        if data_sets["Validation_data"]:
-            print("Epoch: {0}; accuracy: {1}".format(e, accuracy.eval(
-                feed_dict={Z: net.compute_op.eval(feed_dict={net.x: data_sets["Validation_data"][0]}),
-                           net.y: data_sets["Validation_data"][1]})))
-        else:
-            print("Epoch {0} finished; accuracy: {1}".format(e, accuracy.eval(
-                feed_dict={Z: net.compute_op.eval(feed_dict={net.x: data_sets["Test_data"][0]}),
-                           net.y: data_sets["Test_data"][1]})))
-
-    Y = net.compute_op.eval(_dict={net.x: data_sets["Test_data"][0]})
-    correct_prediction = tf.equal(tf.argmax(Y, 1), tf.argmax(data_sets["Test_data"][1], 1))  # should be a placeholder
-    accuracy = tf.mul(tf.reduce_mean(tf.cast(correct_prediction, tf.float32)), 100)
-    final = accuracy.eval(feed_dict={net.x: data_sets["Test_data"][0], net.y: data_sets["Test_data"][1]})
-    print("Final accuracy: {0}".format(final))
-    tf.add_to_collection("Final_Accuracy", final)
+    Y, final = make_accuracy_op(data_sets["Test_data"][1])
+    final_acc = final.eval(feed_dict={Y: data_sets["Test_data"][0]})
+    print("Training finished; final accuracy: {0}".format(final_acc))
+    tf.add_to_collection("Accuracies", final_acc)
 
 
 """Helper methods"""
+
+
+def make_accuracy_op(labels):
+    Z = tf.placeholder(dtype=tf.float32)
+    correct_prediction = tf.equal(tf.argmax(Z, 1), tf.argmax(labels, 1))
+    accuracy_op = tf.mul(tf.reduce_mean(tf.cast(correct_prediction, tf.float32)), 100)
+    return Z, accuracy_op
 
 
 def get_available_gpus():

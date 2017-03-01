@@ -1,7 +1,7 @@
 #removing the cases dir for now, not proper examples of lib usage and quite heavy in format
 Cases/
 .idea/
-
+Vengine/testing_suite.py
 .DS_Store
 Vengine/Costs/__pycache__/__init__.cpython-35.pyc
 Vengine/Engines/__pycache__/__init__.cpython-35.pyc
