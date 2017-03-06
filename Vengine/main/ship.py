@@ -5,7 +5,7 @@ docker-nvidia run model_container python3.5 train_model_script.py
 ship container back
 IS THERE A POINT IN DOCKER CONTAINERS?
 
-TODO: establish two way communication
+TODO: establish two way communication with compile() and exec()
 PROBLEM: how do you send a meta file back to the hosts machine? Do you use scp if the user is logged on
 
 """
@@ -22,6 +22,7 @@ if LOCAL_IP == "127.0.0.1" or LOCAL_IP is None:
 
 TRAIN_SCRIPT_PATH = "./train_model_script.py"  # maybe change this to os.path() or smt
 CURRENT_TIME = time.strftime("%d/%m/%Y")
+
 TAR_BALL_NAME = 'model_container' + CURRENT_TIME + '.tar'
 DEFAULT_META_MODEL_NAME = 'model' + CURRENT_TIME + '.meta'
 MODEL_CONTAINER_NAME = 'model_container_' + CURRENT_TIME
@@ -45,11 +46,13 @@ EXPOSE 4000
 """
 
 
-def ship(model, docker: bool, servers: list):
+def ship(model, servers: list):
     """
-    Convert to tar ball and then push to servers
+    Convert to tar ball
+    Push to servers
+    Start training process
+    Return the model
     :param model:
-    :param docker:
     :param servers: a list of dictionaries
     :return:
     """
@@ -59,10 +62,10 @@ def ship(model, docker: bool, servers: list):
         model = DEFAULT_META_MODEL_NAME
 
     build_docker_container(model)
-    if docker:
-        pass
+
     for server in servers:
-        train_on_server(server, training_file_path)
+        # open a two way communication channel
+        train_on_server(server)
 
 
 """Helper methods"""
@@ -71,18 +74,20 @@ def ship(model, docker: bool, servers: list):
 def build_docker_container(export_path):
     with open("dockerfile", "w") as f:
         f.write(DOCKERFILE.format(export_path))
-    call("docker build -t " + MODEL_CONTAINER_NAME + " . ")  # TODO: SHOULD HAVE A KIND OF NAMING SYSYTEM
+    call("docker build -t " + MODEL_CONTAINER_NAME + " . ")
     call("docker save _model > " + TAR_BALL_NAME)
 
 
-def train_on_server(server, path_to_train_file):
+def train_on_server(server):
     client = miko.SSHClient()
     client.connect(
         hostname=server["url"],
         username=server["username"],
         password=server["password"])
-    call("scp " + path_to_train_file + " username@a:/path/to/destination")
-    stdin, stdout, stderr = client.exec_command('docker run' + MODEL_CONTAINER_NAME + 'with output and stuff')
+    call("scp " + TAR_BALL_NAME + server["username"] + '@' + server["url"] + "/home/" + DEFAULT_META_MODEL_NAME)
+    stdin, stdout, stderr = client.exec_command('docker load <' + TAR_BALL_NAME)
+    stdin, stdout, stderr = client.exec_command('docker run ' + MODEL_CONTAINER_NAME+'bin/bash train.sh')
+
     client.close()
 
 

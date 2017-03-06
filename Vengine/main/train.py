@@ -10,11 +10,7 @@ TRAIN_DATA list of two
 """
 
 
-# TODO: make separate methods for calculating the accuracy and for detecting and training on multiple gpus
-# TODO: make a train method tailored to specific type of model
-
-
-def train(net, epochs, data_sets, batch_size, log):
+def train(net, epochs, data_sets, batch_size):
     print("train() called")
     train_op = net.train_op
 
@@ -33,6 +29,13 @@ def train(net, epochs, data_sets, batch_size, log):
         Z, accuracy = make_accuracy_op(data_sets["Test_data"][1])
 
     data_set = data_sets["Test_data"][1] if data_sets["Validation_data"] is None else data_sets["Validation_data"][1]
+    GPUs = get_available_gpus()
+
+    if GPUs is not []:
+        for GPU in GPUs:
+            with tf.device(GPU):
+                with some_scope:
+                    """CALCULATE tower loss"""
 
     for e in range(epochs):
 

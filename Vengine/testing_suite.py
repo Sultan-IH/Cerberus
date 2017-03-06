@@ -1,8 +1,8 @@
-import tensorflow as tf
-c = tf.constant("Hello, distributed TensorFlow!")
-server = tf.train.Server.create_local_server()
-sess = tf.Session(server.target)  # Create a session on the server.
-sess.run(c)
+# import tensorflow as tf
+# c = tf.constant("Hello, distributed TensorFlow!")
+# server = tf.train.Server.create_local_server()
+# sess = tf.Session(server.target)  # Create a session on the server.
+# sess.run(c)
 """
 THATS SO COOL:
 args = argv[1:] if argv else None
@@ -54,4 +54,10 @@ sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 # Runs the op.
 print sess.run(sum)
 
+a = 2
+
+exec(compile("print(a)", 'fake_module', 'exec'))
+
 """
+
+
