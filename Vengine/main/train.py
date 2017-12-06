@@ -10,7 +10,7 @@ TRAIN_DATA list of two
 """
 
 
-def train(net, epochs, data_sets, batch_size):
+def train(net, epochs, data_sets, batch_size,log=None):
     print("train() called")
     train_op = net.train_op
 
@@ -31,19 +31,35 @@ def train(net, epochs, data_sets, batch_size):
     data_set = data_sets["Test_data"][1] if data_sets["Validation_data"] is None else data_sets["Validation_data"][1]
     GPUs = get_available_gpus()
 
-    if GPUs is not []:
-        for GPU in GPUs:
-            with tf.device(GPU):
-                with some_scope:
-                    """CALCULATE tower loss"""
+    with tf.variable_scope(tf.get_variable_scope()):
 
-    for e in range(epochs):
+        if GPUs is not []:
 
-        for b in batches:
-            train_op.run(feed_dict={net.x: b[0], net.y: b[1]})
-        acc = accuracy.eval(feed_dict={Z: net.compute_op.eval(feed_dict={net.x: data_set})})
-        print("Epoch: {0}; Accuracy: {1}".format(e, acc))
-        tf.add_to_collection("Accuracies", acc)
+            for GPU in GPUs:
+
+                with tf.device(GPU):
+
+                    with tf.name_scope('%s' % GPU) as scope:
+                        """CALCULATE tower loss"""
+
+                        loss = calc_tower_loss(scope)
+
+                        # Reuse variables for the next tower.
+                        tf.get_variable_scope().reuse_variables()
+
+                        # Calculate the gradients for the batch of data on this CIFAR tower.
+                        grads = opt.compute_gradients(loss)
+
+                        # Keep track of the gradients across all towers.
+                        tower_grads.append(grads)
+
+        for e in range(epochs):
+            for b in batches:
+                train_op.run(feed_dict={net.x: b[0], net.y: b[1]})
+
+            acc = accuracy.eval(feed_dict={Z: net.compute_op.eval(feed_dict={net.x: data_set})})
+            print("Epoch: {0}; Accuracy: {1}".format(e, acc))
+            tf.add_to_collection("Accuracies", acc)
 
     Y, final = make_accuracy_op(data_sets["Test_data"][1])
     final_acc = final.eval(feed_dict={Y: data_sets["Test_data"][0]})
@@ -59,6 +75,9 @@ def make_accuracy_op(labels):
     correct_prediction = tf.equal(tf.argmax(Z, 1), tf.argmax(labels, 1))
     accuracy_op = tf.mul(tf.reduce_mean(tf.cast(correct_prediction, tf.float32)), 100)
     return Z, accuracy_op
+
+def calc_tower_loss():
+    """calc loss"""
 
 
 def get_available_gpus():

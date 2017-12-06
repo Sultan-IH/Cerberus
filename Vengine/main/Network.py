@@ -3,16 +3,9 @@ import numpy as np
 import random as rn
 
 """
-Does all of the dirty work: saving, training using a GPU
-
-LAYERS: MUST BE PASSED IN AS A LIST OF INITIATED LAYERS
-every layer must have a get_op() method that takes an op from a previous layer
-
-COST: MUST BE AN UNINITIATED COST CLASS
-
 IDEAS:
-flags = tf.app.flags
-tf.app.run()
+multi gpu train
+retraining particular layers(transfer training)
 
 WHAT IS A NETWORK INSTANCE?:
 params, placeholders
@@ -25,16 +18,12 @@ train op
 class Network():
     """Initialises a graph """
 
-    def __init__(self, engine=None, layers=None, load_dict=None):
+    def __init__(self, engine=None, layers=None, load_dict=None, name=None, log=None):
         if load_dict:
-            self.sess = load_dict["sess"]
-            self.params = load_dict["params"]
-            self.x = load_dict["placeholders"][0]
-            self.y = load_dict["placeholders"][1]
-            self.compute_op = load_dict["train_op"]
-            self.train_op = load_dict["train_op"]
+            self.load_through_dict(load_dict)
 
         else:
+            self.name = name if name is not None else "Untitled_ML_model"
             self.sess = tf.InteractiveSession()
             self.x = tf.placeholder(dtype=tf.float32)
             self.y = tf.placeholder(dtype=tf.float32)
@@ -88,6 +77,15 @@ class Network():
     def fit_engine(self, engine):
         engine.cost_class = engine.cost_class(self.params)  # Initiating cost class
         self.train_op = engine.get_train_op(self.compute_op, self.y)
+        # TODO: log device placement
         self.sess.run(
-            tf.global_variables_initializer())  # Since its an interactive session can it be initiallized in the init?
+            tf.global_variables_initializer())
         tf.add_to_collection("train_op", self.train_op)
+
+    def load_through_dict(self, load_dict):
+        self.sess = load_dict["sess"]
+        self.params = load_dict["params"]
+        self.x = load_dict["placeholders"][0]
+        self.y = load_dict["placeholders"][1]
+        self.compute_op = load_dict["train_op"]
+        self.train_op = load_dict["train_op"]

@@ -1,2 +1,2 @@
 __author__ = "Sultan Kenjeyev"
-__version__ = '0.0.1'
+__version__ = 'v6'

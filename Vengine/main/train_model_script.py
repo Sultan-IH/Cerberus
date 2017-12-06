@@ -10,21 +10,16 @@ training dataset
 port
 path to the metafile
 
+# if a two way connection is established then
+two modes? one interactive and one autonomous
+
 """
 
 from Vengine.main import load, train, save
 from sys import argv
-import zmq
-# establishing a zmq connection
-assert argv[0] == int
-port = argv[0]
-context = zmq.Context()
-socket = context.socket(zmq.PAIR)
-socket.bind("tcp://*:%s" % port)
-socket.send(0)
-msg = socket.recv()
 
 # ML model stuff
 PATH_TO_META = argv
+
 
 model = load(PATH_TO_META)

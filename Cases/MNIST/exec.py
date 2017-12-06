@@ -1,5 +1,5 @@
 from Vengine.Layers import DenseLayer, ConvLayer, PoolLayer
-from Vengine.main import train, Network
+from Vengine.main import train, Network, save
 from Vengine.Engines import Adam_engine
 from Vengine.Costs import CrossEntropy
 
@@ -23,15 +23,15 @@ data_sets = {
     "Train_data": [batch_xs, batch_ys],
     "Test_data": [mnist.test.images, mnist.test.labels],
     "Validation_data": False
-
 }
+
 data_sets["Train_data"][0] = np.reshape(data_sets["Train_data"][0], [-1, 28, 28, 1])
 data_sets["Test_data"][0] = np.reshape(data_sets["Test_data"][0], [-1, 28, 28, 1])
-
 
 model = Network(layers=layers)
 
 model.add_layer(DenseLayer([250, 10]), 5)
 model.fit_engine(engine=Adam_engine(CrossEntropy, lr=1e-3))
 
-train(net=model, data_sets=data_sets, epochs=30, batch_size=32, log=True)
+train(net=model, data_sets=data_sets, epochs=30, batch_size=32)
+save(sess=model.sess, name="my_awesome_model")

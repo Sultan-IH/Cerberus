@@ -1,12 +1,19 @@
 #removing the cases dir for now, not proper examples of lib usage and quite heavy in format
-Cases/
-.idea/
-Vengine/testing_suite.py
+/Cases/
+/.idea/
+/Vengine/testing_suite.py
 .DS_Store
-Vengine/Costs/__pycache__/__init__.cpython-35.pyc
-Vengine/Engines/__pycache__/__init__.cpython-35.pyc
-Vengine/Layers/__pycache__/PoolLayer.cpython-35.pyc
-Vengine/Layers/__pycache__/__init__.cpython-35.pyc
-Vengine/Ready_Models/__pycache__/
-Vengine/main/__pycache__/__init__.cpython-35.pyc
-Vengine/main/__pycache__/save.cpython-35.pyc
+# Python 
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+.classpath
+
+
+.project
+.settings
+.idea
+.metadata
+*.iml
+*.ipr

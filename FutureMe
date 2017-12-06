@@ -1,8 +1,0 @@
-Notes ont the project:
-
-Imagine someone has given you a baby Einstein and told you:
-He doesnt cry, only needs one type of food and you can teach him absolutely anything( but you've got to break it down into simple instructions).
-There is only one thing wrong with him: right now he doesnt know anything
-Writing computer programs is a little bit like teaching that child. Machines are the stupidest things in the world, and yet its easy to teach them because they are crazy fast and precise.
-
-to copy a file over ssh use the scp command

@@ -1,2 +1,0 @@
-Build a scalable framework for creating Neural Networks that can implement different types of layers (Convolution fully connected and so on)
-Using Google's library TensorFlow.
