@@ -1,8 +1,16 @@
-from Vengine.Layers import DenseLayer, ConvLayer, PoolLayer
-from Vengine.main import train, Network, save
-from Vengine.Engines import Adam_engine
-from Vengine.Costs import CrossEntropy
+from Cerberus.Layers import DenseLayer, ConvLayer, PoolLayer
+from Cerberus.main import train, Network, save
+from Cerberus.Engines import Adam_engine
+from Cerberus.Costs import CrossEntropy
 
+"""
+ TODO: maybe treat each hyper parameter not as a constant but as some function of a state
+ this function may well just return a constant
+ POSSIBLE NAMES: atlas, prometheous, redstone, karon
+                 orion, odin, thor, fria, loki,
+                 
+
+"""
 from tensorflow.examples.tutorials.mnist import input_data
 import numpy as np
 
