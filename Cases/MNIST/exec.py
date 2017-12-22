@@ -6,9 +6,11 @@ from Cerberus.Costs import CrossEntropy
 """
  TODO: maybe treat each hyper parameter not as a constant but as some function of a state
  this function may well just return a constant
- POSSIBLE NAMES: atlas, prometheous, redstone, karon
+
+
+ POSSIBLE NAMES: atlas, prometheus, redstone, chiron
                  orion, odin, thor, fria, loki,
-                 
+
 
 """
 from tensorflow.examples.tutorials.mnist import input_data

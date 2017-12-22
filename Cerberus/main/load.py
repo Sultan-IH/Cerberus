@@ -1,12 +1,11 @@
 import tensorflow as tf
 from Cerberus.main import Network
 
-"""to return an instance of Network"""
 
 
 def load(name):
     """
-
+    To return an instance of Network
     :param name: name of the model
     :return: network object, session
     """

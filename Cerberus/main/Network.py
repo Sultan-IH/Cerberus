@@ -7,6 +7,8 @@ IDEAS:
 multi gpu train
 retraining particular layers(transfer training)
 
+MAYBE: rename sequential
+
 WHAT IS A NETWORK INSTANCE?:
 params, placeholders
 compute op
@@ -16,9 +18,16 @@ train op
 
 
 class Network():
-    """Initialises a graph """
-
     def __init__(self, engine=None, layers=None, load_dict=None, name=None, log=None):
+        """
+        Initialises a graph
+
+        """
+        # TODO: move train method here
+        # TODO: optimize functions through tensorflow, but also try cffi
+        # TODO: add logs
+
+
         if load_dict:
             self.load_through_dict(load_dict)
 

@@ -21,5 +21,4 @@ from sys import argv
 # ML model stuff
 PATH_TO_META = argv
 
-
 model = load(PATH_TO_META)
