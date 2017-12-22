@@ -1,4 +1,4 @@
-# V8_vengine
+# Cerberus
 The AI core for any Machine Learning Project. This Project is intended for machine learning research and implementation.
 Essentially offers a high level api for TensorFlow.
 # Library features:
